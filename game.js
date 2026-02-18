@@ -33,8 +33,8 @@ const TOWER_DATA = {
     damage: 25,
     range: 150,
     attackInterval: 1000, // ms
-    imageKey: '구슬이',
-    awakenedImageKey: '각성구슬이',
+    imageKey: '05._image/구슬이.png',
+    awakenedImageKey: '05._image/각성구슬이.png',
     awakenCard: 'guseul_card',
     awakenCost: 300,
     awakenDamage: 50,
@@ -47,8 +47,8 @@ const TOWER_DATA = {
     damage: 40,
     range: 80,
     attackInterval: 2000,
-    imageKey: '먹방이',
-    awakenedImageKey: '각성먹방이',
+    imageKey: '05._image/먹방이.png',
+    awakenedImageKey: '05._image/각성먹방이.png',
     awakenCard: 'meokbang_card',
     awakenCost: 400,
     awakenDamage: 80,
@@ -61,8 +61,8 @@ const TOWER_DATA = {
     damage: 35,
     range: 70,
     attackInterval: 670,
-    imageKey: '불검이_이름버전',
-    awakenedImageKey: '각성불검이_이름버전',
+    imageKey: '05._image/불검이_이름버전.png',
+    awakenedImageKey: '05._image/각성불검이_이름버전.png',
     awakenCard: 'bulgeom_card',
     awakenCost: 350,
     awakenDamage: 70,
@@ -75,8 +75,8 @@ const TOWER_DATA = {
     damage: 30,
     range: 200,
     attackInterval: 830,
-    imageKey: '총검이',
-    awakenedImageKey: '각성총검이',
+    imageKey: '05._image/총검이.png',
+    awakenedImageKey: '05._image/각성총검이.png',
     awakenCard: 'chonggeom_card',
     awakenCost: 380,
     awakenDamage: 60,
@@ -92,21 +92,21 @@ const ENEMY_DATA = {
     hp: 100,
     speed: 40, // px/초
     gold: 15,
-    imageKey: '악당좀비'
+    imageKey: '05._image/악당좀비.png'
   },
   fastZombie: {
     name: '빠른좀비',
     hp: 70,
     speed: 70,
     gold: 20,
-    imageKey: '악당좀비'
+    imageKey: '05._image/악당좀비.png'
   },
   bossZombie: {
     name: '보스좀비',
     hp: 800,
     speed: 25,
     gold: 100,
-    imageKey: '악당좀비'
+    imageKey: '05._image/악당좀비.png'
   }
 };
 
