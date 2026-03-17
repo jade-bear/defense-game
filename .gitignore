@@ -1,0 +1,19 @@
+# Agent 통신/설계 문서 (배포 제외)
+01_planning/
+02_development/
+03_qa/
+04_orchestrator/
+05._image/
+06_architect/
+logs/
+.claude/
+
+# 프로젝트 관리 파일
+CLAUDE.md
+Son_explanation.md
+dashboard-data.js
+dashboard-server.js
+dashboard-update.js
+dashboard.html
+deploy/
+download-pvz-images.js

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>타워 디펜스</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- 로딩 화면 -->
+    <div id="loadingScreen">
+      <h2>게임 로딩 중...</h2>
+      <div id="progressBarOuter">
+        <div id="progressBarInner"></div>
+      </div>
+      <p id="progressText">0%</p>
+    </div>
+
+    <!-- 게임 오버 화면 -->
+    <div id="gameOverScreen" class="overlay" style="display:none;">
+      <h1>게임 오버</h1>
+      <p id="gameOverMsg">적이 기지에 도달했습니다!</p>
+      <p id="gameOverStats" style="font-size:14px;color:#ccc;"></p>
+      <button id="restartBtn">다시 시작</button>
+    </div>
+
+    <!-- 승리 화면 -->
+    <div id="victoryScreen" class="overlay" style="display:none;">
+      <h1>승리!</h1>
+      <p id="victoryMsg">모든 웨이브를 막아냈습니다!</p>
+      <p id="victoryStats" style="font-size:14px;color:#ccc;"></p>
+      <p id="victoryStars" style="font-size:32px;"></p>
+      <button id="restartBtnV">다시 시작</button>
+    </div>
+  </div>
+
+  <!-- 모듈별 JS 로딩 (의존성 순서 준수) -->
+  <!-- 기반 모듈 (의존성 없음) -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+
+  <!-- 시스템 모듈 (기반 모듈만 참조) -->
+  <script src="js/image-loader.js"></script>
+  <script src="js/path-system.js"></script>
+  <script src="js/particle-system.js"></script>
+
+  <!-- 상위 시스템 (시스템 모듈 참조) -->
+  <script src="js/effect-system.js"></script>
+
+  <!-- 게임 객체 (시스템 모듈 참조) -->
+  <script src="js/enemy.js"></script>
+  <script src="js/tower.js"></script>
+
+  <!-- UI 및 렌더링 -->
+  <script src="js/map-renderer.js"></script>
+  <script src="js/ui-manager.js"></script>
+
+  <!-- 메인 진입점 (모든 모듈 사용) -->
+  <script src="js/main.js"></script>
+</body>
+</html>
