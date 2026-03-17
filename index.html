@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>타워 디펜스</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- 로딩 화면 -->
+    <div id="loadingScreen">
+      <h2>게임 로딩 중...</h2>
+      <div id="progressBarOuter">
+        <div id="progressBarInner"></div>
+      </div>
+      <p id="progressText">0%</p>
+    </div>
+
+    <!-- 게임 오버 화면 -->
+    <div id="gameOverScreen" class="overlay" style="display:none;">
+      <h1>게임 오버</h1>
+      <p id="gameOverMsg">적이 기지에 도달했습니다!</p>
+      <button id="restartBtn">다시 시작</button>
+    </div>
+
+    <!-- 승리 화면 -->
+    <div id="victoryScreen" class="overlay" style="display:none;">
+      <h1>승리!</h1>
+      <p id="victoryMsg">모든 웨이브를 막아냈습니다!</p>
+      <button id="restartBtnV">다시 시작</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
