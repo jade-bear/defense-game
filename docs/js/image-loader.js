@@ -59,7 +59,7 @@ const ImageLoader = {
         onProgress(Math.floor(this.loaded / this.total * 100));
         if (this.loaded >= this.total) onComplete();
       };
-      img.src = 'images/' + filename;
+      img.src = 'docs/images/' + filename;
       this.images[key] = img;
     });
   },
