@@ -49,6 +49,10 @@ const Game = {
     this.ctx = this.canvas.getContext('2d');
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
+    // visualViewport 이벤트 (모바일 주소창 토글, 키보드 등)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => this.resizeCanvas());
+    }
 
     // 이미지 로딩 시작
     ImageLoader.preload(
@@ -64,10 +68,19 @@ const Game = {
     document.getElementById('restartBtnV').addEventListener('click', () => this.restart());
   },
 
-  // 캔버스 리사이즈 (모바일 대응)
+  // 캔버스 리사이즈 (모바일/폴더블 대응)
   resizeCanvas() {
-    const containerW = window.innerWidth;
-    const containerH = window.innerHeight;
+    // visualViewport API: 모바일 브라우저 주소창/키보드 제외한 실제 보이는 영역
+    const vp = window.visualViewport;
+    const containerW = vp ? vp.width : window.innerWidth;
+    const containerH = vp ? vp.height : window.innerHeight;
+
+    // 화면 비율에 따라 게임 가로 동적 조절 (폴더블/태블릿 대응)
+    // 일반 폰: ~0.45-0.55, 폴드 커버: ~0.39, 폴드 내부: ~0.75-0.85
+    const screenRatio = containerW / containerH;
+    const dynamicWidth = Math.round(CONFIG.HEIGHT * Math.max(0.5, Math.min(0.75, screenRatio)));
+    CONFIG.WIDTH = Math.max(480, dynamicWidth);
+
     const ratio = CONFIG.WIDTH / CONFIG.HEIGHT;
 
     let w, h;
