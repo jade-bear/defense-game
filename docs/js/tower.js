@@ -16,6 +16,12 @@ class Tower {
     this.imageKey = data.imageKey;
     this.cost = data.cost;
 
+    // 타워 체력
+    this.maxHp = data.hp || 300;
+    this.hp = this.maxHp;
+    this.alive = true;
+    this.destroyed = false;
+
     this.awakened = false;
     this.selected = false;
     this.target = null;
@@ -39,6 +45,9 @@ class Tower {
     // 타워 마비 (햄토리 칼 공격으로 인한)
     this.paralyzed = false;
     this.paralyzeTimer = 0;
+
+    // 피격 플래시
+    this.hitFlashTimer = 0;
 
     // === PvZ 이펙트용 상태 ===
     this.idleTime = Math.random() * Math.PI * 2; // Idle 바운스 위상 (랜덤 시작)
@@ -106,6 +115,11 @@ class Tower {
 
   // 업데이트
   update(dt, enemies, towers) {
+    if (!this.alive) return;
+
+    // 피격 플래시 감소
+    if (this.hitFlashTimer > 0) this.hitFlashTimer -= dt;
+
     // 타워 마비 처리 (햄토리 칼 공격)
     if (this.paralyzed) {
       this.paralyzeTimer -= dt;
@@ -386,15 +400,42 @@ class Tower {
     }
   }
 
-  // 각성 (폭발 이펙트 추가)
+  // 타워 피격 (적의 공격)
+  takeDamage(dmg) {
+    if (!this.alive) return;
+    this.hp -= dmg;
+    this.hitFlashTimer = 150;
+    if (this.hp <= 0) {
+      this.hp = 0;
+      this.alive = false;
+      this.destroyed = true;
+      // 파괴 이펙트
+      EffectSystem.addDeathBurst(this.x, this.y);
+      EffectSystem.addTextPop(this.x, this.y - 30, '파괴!', '#ff2222');
+      ParticleSystem.burst(this.x, this.y, 12, {
+        speed: 80, size: 4,
+        color: '#aa4400', maxLife: 500,
+        gravity: 60
+      });
+    }
+  }
+
+  // 각성 (폭발 이펙트 추가 + HP 증가)
   awaken() {
     this.awakened = true;
+    const data = TOWER_DATA[this.type];
+    const newMaxHp = data.awakenHp || Math.floor(data.hp * 1.5);
+    // HP 비율 유지하며 최대 HP 증가
+    const ratio = this.hp / this.maxHp;
+    this.maxHp = newMaxHp;
+    this.hp = Math.floor(newMaxHp * ratio);
     // 각성 폭발 연출
     EffectSystem.addAwakenBurst(this.x, this.y);
   }
 
   // 렌더링 (PvZ 스타일 이펙트 적용)
   render(ctx) {
+    if (!this.alive) return;
     // === 1. 타원형 바닥 그림자 ===
     ctx.save();
     ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
@@ -476,6 +517,11 @@ class Tower {
       ctx.shadowBlur = 12;
     }
 
+    // 피격 빨간 플래시
+    if (this.hitFlashTimer > 0) {
+      ctx.filter = 'brightness(2) saturate(3) hue-rotate(-30deg)';
+    }
+
     // 인게임 이미지 그리기 (폴백: 도형)
     const ingameKey = this.getImageKey();
     if (ingameKey && ImageLoader.isAvailable(ingameKey)) {
@@ -483,6 +529,10 @@ class Tower {
     } else {
       // 이미지 없을 때 폴백 도형
       drawFallbackTower(ctx, 0, 0, this.type, this.awakened);
+    }
+
+    if (this.hitFlashTimer > 0) {
+      ctx.filter = 'none';
     }
     ctx.restore();
 
@@ -527,6 +577,30 @@ class Tower {
       ctx.beginPath();
       ctx.arc(this.x, this.y + bounceY, this.size / 2 + 5, 0, Math.PI * 2);
       ctx.stroke();
+      ctx.restore();
+    }
+
+    // === 8. 타워 HP 바 (체력이 깎였을 때만 표시) ===
+    if (this.hp < this.maxHp) {
+      const barW = this.size + 4;
+      const barH = 5;
+      const bx = this.x - barW / 2;
+      const by = this.y + this.size / 2 + 4;
+      const ratio = this.hp / this.maxHp;
+
+      ctx.save();
+      // 배경
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.beginPath();
+      ctx.roundRect(bx, by, barW, barH, 2);
+      ctx.fill();
+      // HP (초록 → 노랑 → 빨강)
+      if (ratio > 0) {
+        ctx.fillStyle = ratio > 0.5 ? '#44dd44' : ratio > 0.25 ? '#dddd00' : '#dd2222';
+        ctx.beginPath();
+        ctx.roundRect(bx + 1, by + 1, (barW - 2) * ratio, barH - 2, 1);
+        ctx.fill();
+      }
       ctx.restore();
     }
   }

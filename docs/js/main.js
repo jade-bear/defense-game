@@ -348,6 +348,9 @@ const Game = {
     // 적 업데이트
     this.state.enemies.forEach(e => e.update(dt));
 
+    // 파괴된 타워 제거
+    this.processDestroyedTowers();
+
     // 죽은 적 처리 + 골드 획득
     this.processDeadEnemies();
 
@@ -370,6 +373,20 @@ const Game = {
         '처치: ' + this.state.totalKills + '마리 | 골드: ' + this.state.totalGoldEarned + 'G | 시간: ' + mins + '분 ' + secs + '초';
       document.getElementById('gameOverScreen').style.display = 'flex';
     }
+  },
+
+  // 파괴된 타워 제거
+  processDestroyedTowers() {
+    this.state.towers = this.state.towers.filter(t => {
+      if (!t.alive) {
+        // 선택 해제
+        if (UIManager.selectedTower === t) {
+          UIManager.selectedTower = null;
+        }
+        return false;
+      }
+      return true;
+    });
   },
 
   // 죽은 적 처리 (처치 파티클 추가)

@@ -44,6 +44,9 @@ class Enemy {
     this.canTeleport = false;
     this.teleportDelay = 0;
 
+    // 타워 공격 관련
+    this.towerAttackTimer = 0;
+
     // 보스좀비 소환 전용
     this.summonTimer = 0;
     this.summonInterval = 10000;
@@ -124,6 +127,9 @@ class Enemy {
     if (this.isHamtori && this.alive) {
       this.updateHamtori(dt);
     }
+
+    // 타워 공격 (근접한 타워를 때림)
+    this.updateTowerAttack(dt);
 
     // 보스좀비 소환
     if (this.type === 'bossZombie' && this.alive) {
@@ -250,6 +256,31 @@ class Enemy {
           EffectSystem.addShockwave(t.x, t.y, 30, 'rgba(255, 50, 50, 0.4)');
           break;
         }
+      }
+    }
+  }
+
+  // 타워 공격 AI: 가까운 타워를 때려서 파괴
+  updateTowerAttack(dt) {
+    const data = ENEMY_DATA[this.type];
+    if (!data.towerAttackDamage) return; // 공격 능력 없으면 스킵
+
+    if (this.towerAttackTimer > 0) {
+      this.towerAttackTimer -= dt;
+      return;
+    }
+
+    const towers = Game.state.towers;
+    for (let i = 0; i < towers.length; i++) {
+      const t = towers[i];
+      if (!t.alive) continue;
+      const d = Utils.dist(this.x, this.y, t.x, t.y);
+      if (d <= data.towerAttackRange) {
+        t.takeDamage(data.towerAttackDamage);
+        this.towerAttackTimer = data.towerAttackCooldown;
+        // 공격 이펙트
+        EffectSystem.addShockwave(t.x, t.y, 25, 'rgba(255, 80, 80, 0.4)');
+        break;
       }
     }
   }

@@ -33,6 +33,8 @@ const TOWER_DATA = {
     damage: 25,
     range: 150,
     attackInterval: 1000, // ms
+    hp: 300,              // 타워 체력
+    awakenHp: 450,        // 각성 시 체력
     // 이미지 이원화: 카드(UI)용 / 인게임(맵)용
     cardImageKey: 'guseul',
     ingameImageKey: 'guseul_ingame',
@@ -58,6 +60,8 @@ const TOWER_DATA = {
     damage: 40,
     range: 80,
     attackInterval: 2000,
+    hp: 500,              // 근접 타워라 튼튼
+    awakenHp: 750,
     cardImageKey: 'meokbang',
     ingameImageKey: 'meokbang_ingame',
     awakenedCardImageKey: 'awakened_meokbang',
@@ -79,6 +83,8 @@ const TOWER_DATA = {
     damage: 35,
     range: 70,
     attackInterval: 670,
+    hp: 250,
+    awakenHp: 380,
     cardImageKey: 'bulgeom',
     ingameImageKey: 'bulgeom_ingame',
     awakenedCardImageKey: 'awakened_bulgeom',
@@ -100,6 +106,8 @@ const TOWER_DATA = {
     damage: 30,
     range: 200,
     attackInterval: 830,
+    hp: 280,
+    awakenHp: 420,
     cardImageKey: 'chonggeom',
     ingameImageKey: 'chonggeom_ingame',
     awakenedCardImageKey: 'awakened_chonggeom',
@@ -126,7 +134,11 @@ const ENEMY_DATA = {
     gold: 15,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
-    ingameImageKey: 'villain_zombie_ingame'
+    ingameImageKey: 'villain_zombie_ingame',
+    // 타워 공격 스탯
+    towerAttackDamage: 15,
+    towerAttackRange: 45,
+    towerAttackCooldown: 1500
   },
   fastZombie: {
     name: '빠른좀비',
@@ -135,7 +147,10 @@ const ENEMY_DATA = {
     gold: 20,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
-    ingameImageKey: 'villain_zombie_ingame'
+    ingameImageKey: 'villain_zombie_ingame',
+    towerAttackDamage: 12,
+    towerAttackRange: 40,
+    towerAttackCooldown: 1200
   },
   bossZombie: {
     name: '보스좀비',
@@ -144,7 +159,10 @@ const ENEMY_DATA = {
     gold: 150,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
-    ingameImageKey: 'villain_zombie_ingame'
+    ingameImageKey: 'villain_zombie_ingame',
+    towerAttackDamage: 40,
+    towerAttackRange: 50,
+    towerAttackCooldown: 2000
   },
   // 방패좀비 — 데미지 50% 감소, 방패 내구력 80
   shieldZombie: {
@@ -156,7 +174,10 @@ const ENEMY_DATA = {
     cardImageKey: 'villain_zombie',
     ingameImageKey: 'villain_zombie_ingame',
     shieldHp: 80,
-    damageReduction: 0.5
+    damageReduction: 0.5,
+    towerAttackDamage: 20,
+    towerAttackRange: 45,
+    towerAttackCooldown: 2000
   },
   // 햄토리 — 손톱 투척, 순간이동, 타워 마비
   hamtori: {
@@ -171,7 +192,10 @@ const ENEMY_DATA = {
     nailThrowCooldown: 6000,   // 쿨타임 넉넉히
     knifeRange: 60,
     knifeCooldown: 5000,
-    paralyzeDuration: 2000     // 마비 2초 (3초→2초)
+    paralyzeDuration: 2000,    // 마비 2초 (3초→2초)
+    towerAttackDamage: 25,
+    towerAttackRange: 50,
+    towerAttackCooldown: 1800
   }
 };
 
