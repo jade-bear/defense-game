@@ -7,12 +7,33 @@ const PathSystem = {
   waypoints: [],
   // 현재 선택된 맵 정보 저장
   currentMap: null,
+  // 원본 경로 (480px 기준, 스케일링 복원용)
+  _originalPath: null,
 
   // 맵 기반 경로 설정 (selectMap 결과로 호출)
   setPath(mapResult) {
     this.currentMap = mapResult;
-    this.waypoints = mapResult.path.slice(); // 경로 복사
+    // 원본 경로 저장 (480px 기준 고정 좌표)
+    this._originalPath = mapResult.path.map(p => ({ x: p.x, y: p.y }));
+    // 현재 CONFIG.WIDTH에 맞게 x좌표 스케일링
+    this._applyScale();
+  },
+
+  // x좌표를 현재 CONFIG.WIDTH에 맞게 스케일링
+  _applyScale() {
+    if (!this._originalPath) return;
+    const scale = CONFIG.WIDTH / CONFIG.BASE_WIDTH;
+    this.waypoints = this._originalPath.map(p => ({
+      x: p.x * scale,
+      y: p.y
+    }));
     this._cachedLength = null;
+  },
+
+  // 화면 크기 변경 시 경로 재스케일 (resizeCanvas에서 호출)
+  rescale() {
+    if (!this._originalPath) return;
+    this._applyScale();
   },
 
   // S자 경로 생성 (폴백용 - 맵 선택 실패 시)
@@ -43,6 +64,7 @@ const PathSystem = {
       path: this.waypoints
     };
 
+    this._originalPath = null;
     this._cachedLength = null;
   },
 

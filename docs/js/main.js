@@ -79,6 +79,7 @@ const Game = {
     // 일반 폰: ~0.45-0.55, 폴드 커버: ~0.39, 폴드 내부: ~0.75-0.85
     const screenRatio = containerW / containerH;
     const dynamicWidth = Math.round(CONFIG.HEIGHT * Math.max(0.5, Math.min(0.75, screenRatio)));
+    const prevWidth = CONFIG.WIDTH;
     CONFIG.WIDTH = Math.max(480, dynamicWidth);
 
     const ratio = CONFIG.WIDTH / CONFIG.HEIGHT;
@@ -96,6 +97,11 @@ const Game = {
     this.canvas.height = CONFIG.HEIGHT;
     this.canvas.style.width = w + 'px';
     this.canvas.style.height = h + 'px';
+
+    // 너비 변경 시 경로 + 배경 재스케일
+    if (prevWidth !== CONFIG.WIDTH) {
+      PathSystem.rescale();
+    }
 
     // 배경 캐시 무효화
     this.bgCanvas = null;

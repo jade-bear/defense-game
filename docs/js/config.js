@@ -7,6 +7,7 @@
 
 const CONFIG = {
   // 게임 논리 해상도 (내부 좌표계)
+  BASE_WIDTH: 480,  // 경로 데이터 기준 원본 너비 (스케일링 기준)
   WIDTH: 480,
   HEIGHT: 800,
   FPS: 60,
