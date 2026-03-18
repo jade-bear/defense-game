@@ -164,9 +164,9 @@ const ENEMY_DATA = {
     hp: 300,
     speed: 55,
     gold: 80,
-    imageKey: 'villain_zombie',
-    cardImageKey: 'villain_zombie',
-    ingameImageKey: 'villain_zombie_ingame',
+    imageKey: 'hamtaro',
+    cardImageKey: 'hamtaro',
+    ingameImageKey: 'hamtaro_ingame',
     nailThrowRange: 200,
     nailThrowCooldown: 6000,   // 쿨타임 넉넉히
     knifeRange: 60,

@@ -15,6 +15,7 @@ const IMAGE_SOURCES = {
   chonggeom: 'chonggeom.png',
   awakened_chonggeom: 'awakened_chonggeom.png',
   villain_zombie: 'villain_zombie.png',
+  hamtaro: 'hamtaro.png',
   guseul_card: 'guseul_card.png',
   meokbang_card: 'meokbang_card.png',
   bulgeom_card: 'bulgeom_card.png',
@@ -29,7 +30,8 @@ const IMAGE_SOURCES = {
   awakened_bulgeom_ingame: 'ingame_awakened_bulgeom.png',
   chonggeom_ingame: 'ingame_chonggeom.png',
   awakened_chonggeom_ingame: 'ingame_awakened_chonggeom.png',
-  villain_zombie_ingame: 'ingame_villain_zombie.png'
+  villain_zombie_ingame: 'ingame_villain_zombie.png',
+  hamtaro_ingame: 'ingame_hamtaro.png'
 };
 
 const ImageLoader = {
