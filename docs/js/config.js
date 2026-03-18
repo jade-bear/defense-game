@@ -11,8 +11,9 @@ const CONFIG = {
   HEIGHT: 800,
   FPS: 60,
   // 경제
-  START_GOLD: 200,
+  START_GOLD: 300,
   START_LIVES: 20,
+  WAVE_CLEAR_BONUS: 40,  // 웨이브 클리어 보너스 골드
   SELL_REFUND: 0.7,
   // 타워 설치 불가 영역 (경로 위)
   PATH_BLOCK_DIST: 30,
@@ -120,105 +121,105 @@ const TOWER_DATA = {
 const ENEMY_DATA = {
   zombie: {
     name: '악당좀비',
-    hp: 200,           // 기획서: 200
-    speed: 50,         // 기획서: 50px/초
-    gold: 20,          // 기획서: 20
+    hp: 80,            // 구슬이 1개로 ~3초 처치
+    speed: 40,         // 느린 편 (여유 있게)
+    gold: 15,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
     ingameImageKey: 'villain_zombie_ingame'
   },
   fastZombie: {
     name: '빠른좀비',
-    hp: 150,           // 기획서: 150
-    speed: 80,         // 기획서: 80px/초
-    gold: 25,          // 기획서: 25
+    hp: 100,           // 약하지만 빠름
+    speed: 70,
+    gold: 20,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
     ingameImageKey: 'villain_zombie_ingame'
   },
   bossZombie: {
     name: '보스좀비',
-    hp: 1500,          // 기획서: 1500
-    speed: 25,
-    gold: 150,         // 기획서: 150
+    hp: 800,           // 타워 여러 개로 처리 가능
+    speed: 20,
+    gold: 150,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
     ingameImageKey: 'villain_zombie_ingame'
   },
-  // 방패좀비 (기획서 9-3) — 데미지 50% 감소, 방패 내구력 150
+  // 방패좀비 — 데미지 50% 감소, 방패 내구력 80
   shieldZombie: {
     name: '방패좀비',
-    hp: 350,
-    speed: 30,
-    gold: 40,
+    hp: 200,
+    speed: 25,
+    gold: 35,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
     ingameImageKey: 'villain_zombie_ingame',
-    shieldHp: 150,
+    shieldHp: 80,
     damageReduction: 0.5
   },
-  // 햄토리 (기획서 3-2) — 손톱 투척, 순간이동, 타워 마비
+  // 햄토리 — 손톱 투척, 순간이동, 타워 마비
   hamtori: {
     name: '햄토리',
-    hp: 500,
-    speed: 60,
+    hp: 300,
+    speed: 55,
     gold: 80,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
     ingameImageKey: 'villain_zombie_ingame',
     nailThrowRange: 200,
-    nailThrowCooldown: 5000,
+    nailThrowCooldown: 6000,   // 쿨타임 넉넉히
     knifeRange: 60,
-    knifeCooldown: 4000,
-    paralyzeDuration: 3000
+    knifeCooldown: 5000,
+    paralyzeDuration: 2000     // 마비 2초 (3초→2초)
   }
 };
 
-// ========== 웨이브 데이터 (5레벨, 기획서 반영) ==========
+// ========== 웨이브 데이터 (5레벨, 점진적 난이도) ==========
 const LEVEL_DATA = [
-  // 레벨 1: 쉬움 — 악당좀비만
+  // 레벨 1: 튜토리얼 — 적 소수, 느린 간격
+  { waves: [
+    { enemies: [{ type: 'zombie', count: 3, interval: 2000 }] },
+    { enemies: [{ type: 'zombie', count: 5, interval: 1800 }] },
+    { enemies: [{ type: 'zombie', count: 6, interval: 1500 }] }
+  ]},
+  // 레벨 2: 쉬움 — 빠른좀비 소수 등장
+  { waves: [
+    { enemies: [{ type: 'zombie', count: 6, interval: 1500 }] },
+    { enemies: [{ type: 'zombie', count: 7, interval: 1300 }] },
+    { enemies: [{ type: 'zombie', count: 6, interval: 1200 }, { type: 'fastZombie', count: 2, interval: 1500 }] },
+    { enemies: [{ type: 'zombie', count: 8, interval: 1100 }, { type: 'fastZombie', count: 3, interval: 1200 }] }
+  ]},
+  // 레벨 3: 보통 — 방패좀비 등장, 햄토리 1마리
   { waves: [
     { enemies: [{ type: 'zombie', count: 8, interval: 1200 }] },
-    { enemies: [{ type: 'zombie', count: 10, interval: 1100 }] },
-    { enemies: [{ type: 'zombie', count: 12, interval: 1000 }] }
+    { enemies: [{ type: 'zombie', count: 6, interval: 1100 }, { type: 'fastZombie', count: 3, interval: 1000 }] },
+    { enemies: [{ type: 'zombie', count: 8, interval: 1000 }, { type: 'shieldZombie', count: 1, interval: 2000 }] },
+    { enemies: [{ type: 'fastZombie', count: 5, interval: 900 }, { type: 'shieldZombie', count: 2, interval: 1500 }] },
+    { enemies: [{ type: 'zombie', count: 10, interval: 900 }, { type: 'hamtori', count: 1, interval: 3000 }] }
   ]},
-  // 레벨 2: 보통 — 빠른좀비 등장
+  // 레벨 4: 어려움 — 햄토리 다수 + 보스좀비
   { waves: [
-    { enemies: [{ type: 'zombie', count: 12, interval: 1000 }] },
-    { enemies: [{ type: 'zombie', count: 10, interval: 900 }, { type: 'fastZombie', count: 3, interval: 800 }] },
-    { enemies: [{ type: 'zombie', count: 14, interval: 900 }] },
-    { enemies: [{ type: 'zombie', count: 12, interval: 800 }, { type: 'fastZombie', count: 5, interval: 700 }] }
+    { enemies: [{ type: 'zombie', count: 10, interval: 1000 }] },
+    { enemies: [{ type: 'fastZombie', count: 5, interval: 800 }, { type: 'shieldZombie', count: 2, interval: 1200 }] },
+    { enemies: [{ type: 'zombie', count: 8, interval: 900 }, { type: 'hamtori', count: 1, interval: 3000 }] },
+    { enemies: [{ type: 'zombie', count: 10, interval: 800 }, { type: 'fastZombie', count: 4, interval: 700 }] },
+    { enemies: [{ type: 'shieldZombie', count: 3, interval: 1000 }, { type: 'hamtori', count: 2, interval: 2500 }] },
+    { enemies: [{ type: 'zombie', count: 12, interval: 700 }, { type: 'fastZombie', count: 5, interval: 600 }] },
+    { enemies: [{ type: 'bossZombie', count: 1, interval: 1000 }, { type: 'zombie', count: 8, interval: 800 }] }
   ]},
-  // 레벨 3: 어려움 — 방패좀비 + 햄토리 첫 등장
+  // 레벨 5: 매우 어려움 — 모든 적 등장
   { waves: [
-    { enemies: [{ type: 'zombie', count: 15, interval: 900 }] },
-    { enemies: [{ type: 'zombie', count: 12, interval: 800 }, { type: 'fastZombie', count: 5, interval: 700 }] },
-    { enemies: [{ type: 'zombie', count: 10, interval: 800 }, { type: 'shieldZombie', count: 2, interval: 1500 }] },
-    { enemies: [{ type: 'fastZombie', count: 8, interval: 600 }, { type: 'shieldZombie', count: 3, interval: 1200 }] },
-    { enemies: [{ type: 'zombie', count: 18, interval: 700 }, { type: 'hamtori', count: 1, interval: 2000 }] }
-  ]},
-  // 레벨 4: 매우 어려움 — 햄토리 다수 + 보스좀비
-  { waves: [
-    { enemies: [{ type: 'zombie', count: 20, interval: 800 }] },
-    { enemies: [{ type: 'fastZombie', count: 8, interval: 600 }, { type: 'shieldZombie', count: 4, interval: 1000 }] },
-    { enemies: [{ type: 'zombie', count: 15, interval: 700 }, { type: 'hamtori', count: 2, interval: 3000 }] },
-    { enemies: [{ type: 'zombie', count: 18, interval: 600 }, { type: 'fastZombie', count: 6, interval: 500 }] },
-    { enemies: [{ type: 'shieldZombie', count: 6, interval: 800 }, { type: 'hamtori', count: 3, interval: 2500 }] },
-    { enemies: [{ type: 'zombie', count: 22, interval: 500 }, { type: 'fastZombie', count: 8, interval: 450 }] },
-    { enemies: [{ type: 'bossZombie', count: 1, interval: 1000 }, { type: 'zombie', count: 15, interval: 600 }, { type: 'hamtori', count: 2, interval: 3000 }] }
-  ]},
-  // 레벨 5: 극한 — 모든 적 대량
-  { waves: [
-    { enemies: [{ type: 'zombie', count: 20, interval: 700 }] },
-    { enemies: [{ type: 'fastZombie', count: 12, interval: 500 }, { type: 'shieldZombie', count: 4, interval: 800 }] },
-    { enemies: [{ type: 'zombie', count: 18, interval: 600 }, { type: 'hamtori', count: 3, interval: 2500 }] },
-    { enemies: [{ type: 'shieldZombie', count: 8, interval: 700 }, { type: 'fastZombie', count: 10, interval: 500 }] },
-    { enemies: [{ type: 'zombie', count: 25, interval: 500 }, { type: 'hamtori', count: 5, interval: 2000 }] },
-    { enemies: [{ type: 'fastZombie', count: 15, interval: 400 }, { type: 'shieldZombie', count: 6, interval: 600 }] },
-    { enemies: [{ type: 'zombie', count: 20, interval: 500 }, { type: 'hamtori', count: 5, interval: 2000 }, { type: 'shieldZombie', count: 4, interval: 800 }] },
-    { enemies: [{ type: 'bossZombie', count: 1, interval: 1000 }, { type: 'zombie', count: 25, interval: 400 }] },
-    { enemies: [{ type: 'hamtori', count: 7, interval: 1500 }, { type: 'fastZombie', count: 15, interval: 400 }] },
-    { enemies: [{ type: 'bossZombie', count: 2, interval: 5000 }, { type: 'zombie', count: 30, interval: 350 }, { type: 'hamtori', count: 5, interval: 2000 }] }
+    { enemies: [{ type: 'zombie', count: 12, interval: 900 }] },
+    { enemies: [{ type: 'fastZombie', count: 8, interval: 700 }, { type: 'shieldZombie', count: 2, interval: 1000 }] },
+    { enemies: [{ type: 'zombie', count: 10, interval: 800 }, { type: 'hamtori', count: 2, interval: 2500 }] },
+    { enemies: [{ type: 'shieldZombie', count: 4, interval: 900 }, { type: 'fastZombie', count: 6, interval: 700 }] },
+    { enemies: [{ type: 'zombie', count: 15, interval: 700 }, { type: 'hamtori', count: 3, interval: 2000 }] },
+    { enemies: [{ type: 'fastZombie', count: 10, interval: 600 }, { type: 'shieldZombie', count: 3, interval: 800 }] },
+    { enemies: [{ type: 'bossZombie', count: 1, interval: 1000 }, { type: 'zombie', count: 12, interval: 600 }] },
+    { enemies: [{ type: 'zombie', count: 15, interval: 600 }, { type: 'hamtori', count: 4, interval: 2000 }, { type: 'shieldZombie', count: 3, interval: 1000 }] },
+    { enemies: [{ type: 'bossZombie', count: 1, interval: 1000 }, { type: 'fastZombie', count: 8, interval: 500 }, { type: 'hamtori', count: 3, interval: 2000 }] },
+    { enemies: [{ type: 'bossZombie', count: 2, interval: 5000 }, { type: 'zombie', count: 15, interval: 500 }, { type: 'hamtori', count: 3, interval: 2000 }] }
   ]}
 ];
 

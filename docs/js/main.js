@@ -400,6 +400,14 @@ const Game = {
 
     this.state.waveActive = false;
 
+    // 웨이브 클리어 보너스 골드
+    const bonus = CONFIG.WAVE_CLEAR_BONUS || 0;
+    if (bonus > 0) {
+      this.state.gold += bonus;
+      this.state.totalGoldEarned += bonus;
+      EffectSystem.addTextPop(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 - 50, '웨이브 클리어! +' + bonus + 'G', '#ffd700');
+    }
+
     // 카드 드롭 (30% 확률)
     if (Math.random() < 0.3) {
       this.dropCard();
