@@ -8,9 +8,12 @@
 logs/
 .claude/
 
+# 마크다운 파일 (git에 올리지 않음)
+*.md
+
 # 프로젝트 관리 파일
-CLAUDE.md
 Son_explanation.md
+game.js
 dashboard-data.js
 dashboard-server.js
 dashboard-update.js

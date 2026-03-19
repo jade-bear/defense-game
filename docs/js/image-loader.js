@@ -31,7 +31,13 @@ const IMAGE_SOURCES = {
   chonggeom_ingame: 'ingame_chonggeom.png',
   awakened_chonggeom_ingame: 'ingame_awakened_chonggeom.png',
   villain_zombie_ingame: 'ingame_villain_zombie.png',
-  hamtaro_ingame: 'ingame_hamtaro.png'
+  hamtaro_ingame: 'ingame_hamtaro.png',
+
+  // === 에벌이 (용암 전용 타워) ===
+  aebeol: 'aebeol.png',
+  awakened_aebeol: 'awakened_aebeol.png',
+  aebeol_ingame: 'ingame_aebeol.png',
+  awakened_aebeol_ingame: 'ingame_awakened_aebeol.png'
 };
 
 const ImageLoader = {
@@ -143,7 +149,8 @@ function drawFallbackTower(ctx, x, y, towerType, isAwakened) {
     guseul: '#9C27B0',
     meokbang: '#212121',
     bulgeom: '#F44336',
-    chonggeom: '#E53935'
+    chonggeom: '#E53935',
+    aebeol: '#8B00FF'
   };
   const radius = isAwakened ? 22 : 18;
   ctx.beginPath();

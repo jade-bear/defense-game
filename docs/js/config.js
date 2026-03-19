@@ -127,6 +127,42 @@ const TOWER_DATA = {
     attackEffectType: 'bullet',
     projectileColor: '#ffdd44',
     projectileSpeed: 500
+  },
+  aebeol: {
+    name: '에벌이',
+    cost: 140,
+    damage: 30,
+    range: 100,
+    attackInterval: 1500,
+    hp: 350,
+    awakenHp: 520,
+    cardImageKey: 'aebeol',
+    ingameImageKey: 'aebeol_ingame',
+    awakenedCardImageKey: 'awakened_aebeol',
+    awakenedIngameImageKey: 'awakened_aebeol_ingame',
+    imageKey: 'aebeol',
+    awakenedImageKey: 'awakened_aebeol',
+    // 각성 카드: 총칼카드 + 불카드 조합 (특수 처리)
+    awakenCard: 'aebeol_combo',
+    awakenCost: 400,
+    awakenDamage: 60,
+    awakenRange: 140,
+    awakenAttackInterval: 1200,
+    attackEffectType: 'acid',
+    projectileColor: '#8B00FF',
+    projectileSpeed: 0,
+    // 에벌이 전용: 소환 조건
+    requiresMap: 'lava',
+    requiresNearby: 'bulgeom',
+    nearbyRange: 150,
+    // 산성 범위 공격 수치
+    acidRange: 120,
+    acidDPS: 15,
+    acidDuration: 3000,
+    awakenAcidRange: 200,
+    awakenAcidDPS: 25,
+    awakenCritChance: 0.3,
+    awakenCritDelay: 3000
   }
 };
 
@@ -135,19 +171,18 @@ const ENEMY_DATA = {
   zombie: {
     name: '악당좀비',
     hp: 80,            // 구슬이 1개로 ~3초 처치
-    speed: 40,         // 느린 편 (여유 있게)
+    speed: 40,
     gold: 15,
     imageKey: 'villain_zombie',
     cardImageKey: 'villain_zombie',
     ingameImageKey: 'villain_zombie_ingame',
-    // 타워 공격 스탯
     towerAttackDamage: 15,
     towerAttackRange: 45,
     towerAttackCooldown: 1500
   },
   fastZombie: {
     name: '빠른좀비',
-    hp: 100,           // 약하지만 빠름
+    hp: 100,
     speed: 70,
     gold: 20,
     imageKey: 'villain_zombie',
@@ -159,7 +194,7 @@ const ENEMY_DATA = {
   },
   bossZombie: {
     name: '보스좀비',
-    hp: 800,           // 타워 여러 개로 처리 가능
+    hp: 800,
     speed: 20,
     gold: 150,
     imageKey: 'villain_zombie',
@@ -194,10 +229,10 @@ const ENEMY_DATA = {
     cardImageKey: 'hamtaro',
     ingameImageKey: 'hamtaro_ingame',
     nailThrowRange: 200,
-    nailThrowCooldown: 6000,   // 쿨타임 넉넉히
+    nailThrowCooldown: 6000,
     knifeRange: 60,
     knifeCooldown: 5000,
-    paralyzeDuration: 2000,    // 마비 2초 (3초→2초)
+    paralyzeDuration: 2000,
     towerAttackDamage: 25,
     towerAttackRange: 50,
     towerAttackCooldown: 1800

@@ -49,7 +49,6 @@ const Game = {
     this.ctx = this.canvas.getContext('2d');
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
-    // visualViewport 이벤트 (모바일 주소창 토글, 키보드 등)
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', () => this.resizeCanvas());
     }
@@ -70,13 +69,11 @@ const Game = {
 
   // 캔버스 리사이즈 (모바일/폴더블 대응)
   resizeCanvas() {
-    // visualViewport API: 모바일 브라우저 주소창/키보드 제외한 실제 보이는 영역
     const vp = window.visualViewport;
     const containerW = vp ? vp.width : window.innerWidth;
     const containerH = vp ? vp.height : window.innerHeight;
 
     // 화면 비율에 따라 게임 가로 동적 조절 (폴더블/태블릿 대응)
-    // 일반 폰: ~0.45-0.55, 폴드 커버: ~0.39, 폴드 내부: ~0.75-0.85
     const screenRatio = containerW / containerH;
     const dynamicWidth = Math.round(CONFIG.HEIGHT * Math.max(0.5, Math.min(0.75, screenRatio)));
     const prevWidth = CONFIG.WIDTH;
@@ -254,6 +251,25 @@ const Game = {
       return;
     }
 
+    // 에벌이 소환 조건: 용암 맵 + 근처 불검이 필요
+    if (data.requiresMap) {
+      const currentMapId = PathSystem.currentMap ? PathSystem.currentMap.mapId : null;
+      if (currentMapId !== data.requiresMap) {
+        UIManager.showMessage('용암 맵에서만 배치할 수 있습니다!', 2000);
+        return;
+      }
+    }
+    if (data.requiresNearby) {
+      const nearbyRange = data.nearbyRange || 150;
+      const hasNearby = this.state.towers.some(
+        t => t.type === data.requiresNearby && Utils.dist(x, y, t.x, t.y) <= nearbyRange
+      );
+      if (!hasNearby) {
+        UIManager.showMessage('근처에 불검이가 있어야 합니다!', 2000);
+        return;
+      }
+    }
+
     this.state.gold -= data.cost;
     const tower = new Tower(x, y, type);
     this.state.towers.push(tower);
@@ -270,7 +286,13 @@ const Game = {
     if (tower.awakened) {
       const data = TOWER_DATA[tower.type];
       const cardKey = data.awakenCard;
-      this.state.cards[cardKey] = (this.state.cards[cardKey] || 0) + 1;
+      if (cardKey === 'aebeol_combo') {
+        // 에벌이: 총칼카드 + 불카드 각각 반환
+        this.state.cards['chonggeom_card'] = (this.state.cards['chonggeom_card'] || 0) + 1;
+        this.state.cards['bulgeom_card'] = (this.state.cards['bulgeom_card'] || 0) + 1;
+      } else {
+        this.state.cards[cardKey] = (this.state.cards[cardKey] || 0) + 1;
+      }
     }
     this.state.towers = this.state.towers.filter(t => t !== tower);
     UIManager.showMessage(refund + 'G 환급!', 1200);
@@ -286,7 +308,27 @@ const Game = {
       UIManager.showMessage('이미 각성했습니다!', 1500);
       return;
     }
-    if (this.state.cards[cardKey] <= 0) {
+
+    // 에벌이 각성: 총칼카드 + 불카드 조합
+    if (cardKey === 'aebeol_combo') {
+      if ((this.state.cards['chonggeom_card'] || 0) <= 0 || (this.state.cards['bulgeom_card'] || 0) <= 0) {
+        UIManager.showMessage('총칼카드 + 불카드가 필요합니다!', 2000);
+        return;
+      }
+      if (this.state.gold < data.awakenCost) {
+        UIManager.showMessage('골드가 부족합니다!', 1500);
+        return;
+      }
+      this.state.cards['chonggeom_card']--;
+      this.state.cards['bulgeom_card']--;
+      this.state.gold -= data.awakenCost;
+      tower.awaken();
+      this.state.totalAwakenings++;
+      UIManager.showMessage(tower.name + ' 각성!! (총칼+불카드)', 2500);
+      return;
+    }
+
+    if ((this.state.cards[cardKey] || 0) <= 0) {
       UIManager.showMessage('각성 카드가 없습니다!', 1500);
       return;
     }
@@ -401,6 +443,7 @@ const Game = {
     }
   },
 
+  // 파괴된 타워 제거
   // 파괴된 타워 제거 (각성카드 회수, 골드 환급 없음)
   processDestroyedTowers() {
     this.state.towers = this.state.towers.filter(t => {
@@ -413,7 +456,12 @@ const Game = {
         if (t.awakened) {
           const data = TOWER_DATA[t.type];
           const cardKey = data.awakenCard;
-          this.state.cards[cardKey] = (this.state.cards[cardKey] || 0) + 1;
+          if (cardKey === 'aebeol_combo') {
+            this.state.cards['chonggeom_card'] = (this.state.cards['chonggeom_card'] || 0) + 1;
+            this.state.cards['bulgeom_card'] = (this.state.cards['bulgeom_card'] || 0) + 1;
+          } else {
+            this.state.cards[cardKey] = (this.state.cards[cardKey] || 0) + 1;
+          }
           UIManager.showMessage('파괴! 각성카드 회수!', 1500);
         } else {
           UIManager.showMessage('타워 파괴!', 1200);
@@ -479,7 +527,12 @@ const Game = {
               const data = TOWER_DATA[t.type];
               refundGold += data.awakenCost;
               const cardKey = data.awakenCard;
-              this.state.cards[cardKey] = (this.state.cards[cardKey] || 0) + 1;
+              if (cardKey === 'aebeol_combo') {
+                this.state.cards['chonggeom_card'] = (this.state.cards['chonggeom_card'] || 0) + 1;
+                this.state.cards['bulgeom_card'] = (this.state.cards['bulgeom_card'] || 0) + 1;
+              } else {
+                this.state.cards[cardKey] = (this.state.cards[cardKey] || 0) + 1;
+              }
             }
           });
           this.state.gold += refundGold;

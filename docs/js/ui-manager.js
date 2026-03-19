@@ -12,7 +12,8 @@ const UIManager = {
     guseul_card: '구슬카드',
     meokbang_card: '입카드',
     bulgeom_card: '불카드',
-    chonggeom_card: '총칼카드'
+    chonggeom_card: '총칼카드',
+    aebeol_combo: '총칼+불카드'
   },
   cardImageKeys: {
     guseul_card: 'guseul_card',
@@ -123,9 +124,19 @@ const UIManager = {
       const cardY = barY + 8;
       const canAfford = state.gold >= data.cost;
 
+      // 에벌이 맵 제한 체크
+      let mapRestricted = false;
+      if (data.requiresMap) {
+        const currentMapId = PathSystem.currentMap ? PathSystem.currentMap.mapId : null;
+        if (currentMapId !== data.requiresMap) mapRestricted = true;
+      }
+      const available = canAfford && !mapRestricted;
+
       // 카드 배경
       ctx.save();
-      if (this.selectedTowerType === type) {
+      if (mapRestricted) {
+        ctx.fillStyle = 'rgba(30, 10, 10, 0.8)';
+      } else if (this.selectedTowerType === type) {
         ctx.shadowColor = '#44ff88';
         ctx.shadowBlur = 10;
         ctx.fillStyle = 'rgba(50, 100, 50, 0.8)';
@@ -139,7 +150,8 @@ const UIManager = {
       ctx.fill();
 
       // 카드 테두리
-      ctx.strokeStyle = this.selectedTowerType === type ? '#44ff88' :
+      ctx.strokeStyle = mapRestricted ? '#331111' :
+                         this.selectedTowerType === type ? '#44ff88' :
                          canAfford ? '#aa8844' : '#555';
       ctx.lineWidth = this.selectedTowerType === type ? 2 : 1;
       ctx.beginPath();
@@ -150,17 +162,25 @@ const UIManager = {
       // 카드 이미지: cardImageKey 사용 (이미지 이원화)
       const cardImgKey = getTowerCardImageKey(type, false) || this.cardImageKeys[data.awakenCard];
       const iconSize = Math.min(44, cardW - 8);
-      if (!canAfford) {
+      if (!available) {
         ctx.save();
-        ctx.globalAlpha = 0.4;
+        ctx.globalAlpha = mapRestricted ? 0.25 : 0.4;
       }
       ImageLoader.draw(ctx, cardImgKey, cx, cardY + cardH / 2 - 5, iconSize, iconSize);
-      if (!canAfford) {
+      if (!available) {
         ctx.restore();
       }
 
+      // 맵 제한 표시
+      if (mapRestricted) {
+        ctx.fillStyle = '#ff4444';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('용암전용', cx, cardY + 12);
+      }
+
       // 가격
-      ctx.fillStyle = canAfford ? '#88ff88' : '#ff4444';
+      ctx.fillStyle = mapRestricted ? '#666666' : (canAfford ? '#88ff88' : '#ff4444');
       ctx.font = 'bold 13px Arial';
       ctx.textAlign = 'center';
       ctx.fillText(data.cost + 'G', cx, cardY + cardH - 4);
@@ -229,21 +249,27 @@ const UIManager = {
     // 각성 버튼 + 카드 정보
     if (!t.awakened) {
       const cardKey = TOWER_DATA[t.type].awakenCard;
-      const cardCount = state.cards[cardKey] || 0;
-      const hasCard = cardCount > 0;
       const awakenCost = TOWER_DATA[t.type].awakenCost;
+
+      // 에벌이: 총칼카드+불카드 조합 각성
+      let hasCard, cardLabel;
+      if (cardKey === 'aebeol_combo') {
+        const c1 = state.cards['chonggeom_card'] || 0;
+        const c2 = state.cards['bulgeom_card'] || 0;
+        hasCard = c1 > 0 && c2 > 0;
+        cardLabel = hasCard ? '총칼+불카드 OK' : '총칼+불카드 필요';
+      } else {
+        const cardCount = state.cards[cardKey] || 0;
+        hasCard = cardCount > 0;
+        cardLabel = hasCard ? this.cardNames[cardKey] + ' x' + cardCount : '카드 없음';
+      }
       const canAwaken = hasCard && state.gold >= awakenCost;
 
       // 카드 상태 텍스트 (버튼 위에)
       ctx.font = '10px Arial';
       ctx.textAlign = 'center';
-      if (hasCard) {
-        ctx.fillStyle = '#88ff88';
-        ctx.fillText(this.cardNames[cardKey] + ' x' + cardCount, px + 155, btnY - 4);
-      } else {
-        ctx.fillStyle = '#ff6666';
-        ctx.fillText('카드 없음', px + 155, btnY - 4);
-      }
+      ctx.fillStyle = hasCard ? '#88ff88' : '#ff6666';
+      ctx.fillText(cardLabel, px + 155, btnY - 4);
 
       ctx.fillStyle = canAwaken ? '#cc9900' : '#444';
       ctx.beginPath();
@@ -449,7 +475,18 @@ const UIManager = {
     const idx = Math.floor(x / slotW);
     if (idx >= 0 && idx < this.towerTypes.length) {
       const type = this.towerTypes[idx];
-      if (state.gold >= TOWER_DATA[type].cost) {
+      const data = TOWER_DATA[type];
+
+      // 맵 제한 체크
+      if (data.requiresMap) {
+        const currentMapId = PathSystem.currentMap ? PathSystem.currentMap.mapId : null;
+        if (currentMapId !== data.requiresMap) {
+          this.showMessage('용암 맵에서만 선택할 수 있습니다!', 2000);
+          return;
+        }
+      }
+
+      if (state.gold >= data.cost) {
         if (this.selectedTowerType === type) {
           this.selectedTowerType = null;
         } else {

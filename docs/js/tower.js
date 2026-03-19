@@ -39,6 +39,10 @@ class Tower {
     this.weaponMode = 'gun';
     this.comboStage = 0;
 
+    // 에벌이 전용
+    this.acidPools = [];
+    this.critDelayQueue = [];
+
     // 버프 관련
     this.buffMultiplier = 1.0;
 
@@ -165,6 +169,12 @@ class Tower {
       this.applyTowerBuff(towers);
     }
 
+    // 에벌이 산성 웅덩이 + 지연 폭발 업데이트
+    if (this.type === 'aebeol') {
+      this.updateAcidPools(dt, enemies);
+      this.updateCritDelayQueue(dt, enemies);
+    }
+
     // 공격
     if (this.target && this.attackTimer <= 0) {
       this.attack(enemies);
@@ -182,6 +192,7 @@ class Tower {
       case 'meokbang': this.attackMeokbang(enemies); break;
       case 'bulgeom': this.attackBulgeom(enemies); break;
       case 'chonggeom': this.attackChonggeom(enemies); break;
+      case 'aebeol': this.attackAebeol(enemies); break;
     }
   }
 
@@ -400,6 +411,123 @@ class Tower {
     }
   }
 
+  // ===== 에벌이 공격 (용암 산성 토해내기) =====
+  attackAebeol(enemies) {
+    if (!this.target || !this.target.alive) return;
+    const data = TOWER_DATA.aebeol;
+    const dmg = this.getDamage();
+    const acidRange = this.awakened ? data.awakenAcidRange : data.acidRange;
+    const acidDPS = this.awakened ? data.awakenAcidDPS : data.acidDPS;
+    const acidDuration = data.acidDuration;
+
+    // 대상에게 직접 대미지
+    this.target.takeDamage(dmg);
+
+    // 각성 크리티컬 (30% 확률)
+    if (this.awakened && Math.random() < data.awakenCritChance) {
+      this.target.takeDamage(dmg);
+      EffectSystem.addTextPop(this.target.x, this.target.y - 30, '크리티컬!', '#ff00ff');
+      // 3초 후 지연 폭발 등록
+      this.critDelayQueue.push({
+        timer: data.awakenCritDelay,
+        x: this.target.x,
+        y: this.target.y,
+        damage: dmg
+      });
+    }
+
+    // 산성 웅덩이 생성
+    this.acidPools.push({
+      x: this.target.x,
+      y: this.target.y,
+      range: acidRange,
+      dps: acidDPS,
+      timer: acidDuration,
+      maxTimer: acidDuration
+    });
+
+    // 산성 이펙트
+    EffectSystem.addShockwave(this.target.x, this.target.y, acidRange, 'rgba(139,0,255,0.4)');
+    EffectSystem.addTextPop(this.target.x, this.target.y - 20, '산성!', '#8B00FF');
+    ParticleSystem.burst(this.target.x, this.target.y, 8, {
+      speed: 60, size: 5,
+      color: '#9900ff', maxLife: 600,
+      gravity: 20, glow: true
+    });
+
+    // 범위 내 모든 적에게 산성 DOT
+    enemies.forEach(e => {
+      if (e.alive && Utils.dist(this.target.x, this.target.y, e.x, e.y) <= acidRange) {
+        e.applyBurn(acidDPS, acidDuration);
+      }
+    });
+
+    // 각성 꼬리치기 (50px 이내 적 넉백)
+    if (this.awakened) {
+      enemies.forEach(e => {
+        if (e.alive && Utils.dist(this.x, this.y, e.x, e.y) <= 50) {
+          e.progress = Math.max(0, e.progress - 0.05);
+          EffectSystem.addTextPop(e.x, e.y - 15, '꼬리!', '#ff44ff');
+        }
+      });
+    }
+
+    // 특수 드롭 체크 (적 처치 시)
+    if (this.target.hp <= 0) {
+      this.checkAebeolDrop();
+    }
+  }
+
+  // 에벌이 산성 웅덩이 업데이트
+  updateAcidPools(dt, enemies) {
+    this.acidPools = this.acidPools.filter(pool => {
+      pool.timer -= dt;
+      if (pool.timer <= 0) return false;
+      enemies.forEach(e => {
+        if (e.alive && Utils.dist(pool.x, pool.y, e.x, e.y) <= pool.range) {
+          e.takeDamage(pool.dps * dt / 1000);
+        }
+      });
+      return true;
+    });
+  }
+
+  // 에벌이 각성 크리티컬 지연 폭발
+  updateCritDelayQueue(dt, enemies) {
+    this.critDelayQueue = this.critDelayQueue.filter(crit => {
+      crit.timer -= dt;
+      if (crit.timer <= 0) {
+        const range = TOWER_DATA.aebeol.awakenAcidRange;
+        enemies.forEach(e => {
+          if (e.alive && Utils.dist(crit.x, crit.y, e.x, e.y) <= range) {
+            e.takeDamage(crit.damage);
+          }
+        });
+        EffectSystem.addShockwave(crit.x, crit.y, range, 'rgba(255,0,255,0.6)');
+        EffectSystem.addTextPop(crit.x, crit.y - 25, '지연 폭발!', '#ff00ff');
+        ParticleSystem.burst(crit.x, crit.y, 12, {
+          speed: 90, size: 6,
+          color: '#cc00ff', maxLife: 500,
+          gravity: -15, glow: true
+        });
+        return false;
+      }
+      return true;
+    });
+  }
+
+  // 에벌이 특수 드롭 (총칼카드/불카드)
+  checkAebeolDrop() {
+    const bulgeomCount = Game.state.towers.filter(t => t.type === 'bulgeom').length;
+    const dropChance = bulgeomCount >= 2 ? 0.30 : 0.15;
+    if (Math.random() < dropChance) {
+      const cardKey = Math.random() < 0.5 ? 'chonggeom_card' : 'bulgeom_card';
+      Game.state.cards[cardKey]++;
+      const name = UIManager.cardNames[cardKey];
+      UIManager.showMessage('에벌이 드롭: ' + name + '!', 2500);
+    }
+  }
+
   // 타워 피격 (적의 공격)
   takeDamage(dmg) {
     if (!this.alive) return;
@@ -409,7 +537,6 @@ class Tower {
       this.hp = 0;
       this.alive = false;
       this.destroyed = true;
-      // 파괴 이펙트
       EffectSystem.addDeathBurst(this.x, this.y);
       EffectSystem.addTextPop(this.x, this.y - 30, '파괴!', '#ff2222');
       ParticleSystem.burst(this.x, this.y, 12, {
@@ -425,11 +552,9 @@ class Tower {
     this.awakened = true;
     const data = TOWER_DATA[this.type];
     const newMaxHp = data.awakenHp || Math.floor(data.hp * 1.5);
-    // HP 비율 유지하며 최대 HP 증가
     const ratio = this.hp / this.maxHp;
     this.maxHp = newMaxHp;
     this.hp = Math.floor(newMaxHp * ratio);
-    // 각성 폭발 연출
     EffectSystem.addAwakenBurst(this.x, this.y);
   }
 
@@ -589,12 +714,10 @@ class Tower {
       const ratio = this.hp / this.maxHp;
 
       ctx.save();
-      // 배경
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.beginPath();
       ctx.roundRect(bx, by, barW, barH, 2);
       ctx.fill();
-      // HP (초록 → 노랑 → 빨강)
       if (ratio > 0) {
         ctx.fillStyle = ratio > 0.5 ? '#44dd44' : ratio > 0.25 ? '#dddd00' : '#dd2222';
         ctx.beginPath();

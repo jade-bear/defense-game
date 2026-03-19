@@ -267,7 +267,7 @@ class Enemy {
   // 타워 공격 AI: 가까운 타워를 때려서 파괴
   updateTowerAttack(dt) {
     const data = ENEMY_DATA[this.type];
-    if (!data.towerAttackDamage) return; // 공격 능력 없으면 스킵
+    if (!data.towerAttackDamage) return;
 
     if (this.towerAttackTimer > 0) {
       this.towerAttackTimer -= dt;
@@ -282,7 +282,6 @@ class Enemy {
       if (d <= data.towerAttackRange) {
         t.takeDamage(data.towerAttackDamage);
         this.towerAttackTimer = data.towerAttackCooldown;
-        // 공격 이펙트
         EffectSystem.addShockwave(t.x, t.y, 25, 'rgba(255, 80, 80, 0.4)');
         break;
       }
