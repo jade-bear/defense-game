@@ -261,10 +261,17 @@ const Game = {
     UIManager.showMessage(data.name + ' 배치!', 1000);
   },
 
-  // 타워 판매
+  // 타워 판매 (HP 비율에 따라 감가)
   sellTower(tower) {
-    const refund = Math.floor(tower.cost * CONFIG.SELL_REFUND);
+    const hpRatio = tower.hp / tower.maxHp;
+    const refund = Math.floor(tower.cost * CONFIG.SELL_REFUND * hpRatio);
     this.state.gold += refund;
+    // 각성카드는 판매 시 항상 돌려줌
+    if (tower.awakened) {
+      const data = TOWER_DATA[tower.type];
+      const cardKey = data.awakenCard;
+      this.state.cards[cardKey] = (this.state.cards[cardKey] || 0) + 1;
+    }
     this.state.towers = this.state.towers.filter(t => t !== tower);
     UIManager.showMessage(refund + 'G 환급!', 1200);
     UIManager.selectedTower = null;
@@ -394,13 +401,22 @@ const Game = {
     }
   },
 
-  // 파괴된 타워 제거
+  // 파괴된 타워 제거 (각성카드 회수, 골드 환급 없음)
   processDestroyedTowers() {
     this.state.towers = this.state.towers.filter(t => {
       if (!t.alive) {
         // 선택 해제
         if (UIManager.selectedTower === t) {
           UIManager.selectedTower = null;
+        }
+        // 각성 타워인 경우 각성카드 회수 (골드는 환급하지 않음)
+        if (t.awakened) {
+          const data = TOWER_DATA[t.type];
+          const cardKey = data.awakenCard;
+          this.state.cards[cardKey] = (this.state.cards[cardKey] || 0) + 1;
+          UIManager.showMessage('파괴! 각성카드 회수!', 1500);
+        } else {
+          UIManager.showMessage('타워 파괴!', 1200);
         }
         return false;
       }

@@ -8,9 +8,13 @@ class Enemy {
     const data = ENEMY_DATA[type];
     this.type = type;
     this.name = data.name;
-    this.maxHp = data.hp;
-    this.hp = data.hp;
-    this.speed = data.speed;
+    // 현재 레벨에 따른 체력/속도 스케일링
+    const level = (Game.state && Game.state.level !== undefined) ? Game.state.level : 0;
+    const hpScale = CONFIG.LEVEL_HP_SCALE[level] || 1.0;
+    const speedScale = CONFIG.LEVEL_SPEED_SCALE[level] || 1.0;
+    this.maxHp = Math.round(data.hp * hpScale);
+    this.hp = this.maxHp;
+    this.speed = Math.round(data.speed * speedScale);
     this.gold = data.gold;
     this.imageKey = data.imageKey;
     // 이미지 이원화: 인게임용 이미지 키 (폴백 포함)

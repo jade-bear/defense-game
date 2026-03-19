@@ -23,7 +23,11 @@ const CONFIG = {
   // 상단 HUD 높이
   HUD_HEIGHT: 50,
   // 파티클 최대 수 (성능 보호)
-  MAX_PARTICLES: 100
+  MAX_PARTICLES: 100,
+  // 레벨별 적 체력 스케일링 (레벨 1~5, 인덱스 0~4)
+  LEVEL_HP_SCALE: [1.0, 1.3, 1.7, 2.2, 3.0],
+  // 레벨별 적 이동속도 스케일링
+  LEVEL_SPEED_SCALE: [1.0, 1.0, 1.1, 1.2, 1.3]
 };
 
 // ========== 타워 데이터 (확장 가능 구조 - 새 타워 추가 시 객체 하나만 추가) ==========
@@ -57,7 +61,7 @@ const TOWER_DATA = {
   },
   meokbang: {
     name: '먹방이',
-    cost: 150,
+    cost: 200,
     damage: 40,
     range: 80,
     attackInterval: 2000,
@@ -70,7 +74,7 @@ const TOWER_DATA = {
     imageKey: 'meokbang',
     awakenedImageKey: 'awakened_meokbang',
     awakenCard: 'meokbang_card',
-    awakenCost: 400,
+    awakenCost: 450,
     awakenDamage: 80,
     awakenRange: 100,
     awakenAttackInterval: 1400,

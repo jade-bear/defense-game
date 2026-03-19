@@ -212,14 +212,16 @@ const UIManager = {
     ctx.fillText('공속: ' + atkSpeed + '회/초', px + 10, py + 56);
     ctx.fillText('DPS: ' + dps, px + 115, py + 56);
 
-    // 판매 버튼
-    const sellGold = Math.floor(t.cost * CONFIG.SELL_REFUND);
+    // 판매 버튼 (HP 비율에 따라 감가 반영)
+    const hpRatio = t.hp / t.maxHp;
+    const sellGold = Math.floor(t.cost * CONFIG.SELL_REFUND * hpRatio);
     const btnY = py + 72;
     ctx.fillStyle = '#cc3333';
     ctx.beginPath();
     ctx.roundRect(px + 10, btnY, 85, 32, 6);
     ctx.fill();
-    ctx.fillStyle = '#fff';
+    // 감가 시 연한 빨간색, 풀HP 시 흰색
+    ctx.fillStyle = hpRatio < 1 ? '#ff6666' : '#fff';
     ctx.font = 'bold 13px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('판매 ' + sellGold + 'G', px + 52, btnY + 22);
