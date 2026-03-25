@@ -403,7 +403,13 @@ function selectMap(level) {
     };
   }
 
-  const selectedMapId = availableMaps[Math.floor(Math.random() * availableMaps.length)];
+  // 용암 맵 가중치 3배 (에벌이 테스트용)
+  const weighted = [];
+  for (const id of availableMaps) {
+    const weight = (id === 'lava') ? 3 : 1;
+    for (let i = 0; i < weight; i++) weighted.push(id);
+  }
+  const selectedMapId = weighted[Math.floor(Math.random() * weighted.length)];
   const selectedMap = MAP_DATA[selectedMapId];
   const paths = selectedMap.paths[difficulty];
   const selectedPath = paths[Math.floor(Math.random() * paths.length)];
